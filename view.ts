@@ -29,6 +29,7 @@ export class ReflectView extends ItemView {
     async onOpen() {
         const { containerEl } = this;
         containerEl.empty();
+        containerEl.addClass('reflect-view-container');
 
         containerEl.createEl('h2', { text: 'ふりかえりノートを作成' });
 
