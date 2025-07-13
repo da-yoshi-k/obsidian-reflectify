@@ -1,8 +1,9 @@
 import { Plugin } from 'obsidian';
-import { getReflectionFilename, generateTemplate } from './utils';
+import { getReflectionFilename, generateTemplate, getPreviousReflectionLink } from './utils';
 import { DEFAULT_SETTINGS, ReflectifySettingTab, ReflectifySettings } from './settings';
 import { ReflectView, REFLECT_VIEW_TYPE } from './view';
 import { TemplateType } from './templates';
+import moment from 'moment';
 
 export default class ReflectifyPlugin extends Plugin {
   settings: ReflectifySettings;
@@ -48,7 +49,20 @@ export default class ReflectifyPlugin extends Plugin {
   async createReflectionNote(granularity: 'daily' | 'weekly', templateType: TemplateType) {
     const filename = getReflectionFilename(granularity);
     const template = generateTemplate(templateType);
-    const file = await this.app.vault.create(filename, template);
+    const previousLink = getPreviousReflectionLink(this.app);
+
+    const frontmatter = `---`
+        + `\ncreated: ${moment().format()}`
+        + `\ntemplate: ${templateType}`
+        + `\ntags: [reflectify, ${templateType.toLowerCase()}]`
+        + `\n---`;
+
+    let content = `${frontmatter}\n\n${template}`;
+    if (previousLink) {
+        content += `\n\n---\n前回のふりかえり → ${previousLink}`;
+    }
+
+    const file = await this.app.vault.create(filename, content);
     const leaf = this.app.workspace.getLeaf(true);
     await leaf.openFile(file);
   }
