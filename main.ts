@@ -49,18 +49,21 @@ export default class ReflectifyPlugin extends Plugin {
   async createReflectionNote(granularity: 'daily' | 'weekly' | 'monthly', templateType: TemplateType) {
     const filename = getReflectionFilename(granularity);
     const template = generateTemplate(templateType);
-    const previousLink = getPreviousReflectionLink(this.app);
+    const previousLink = getPreviousReflectionLink(this.app, granularity);
 
     const frontmatter = `---`
         + `\ncreated: ${moment().format()}`
+        + `\nperiod: ${granularity}`
         + `\ntemplate: ${templateType}`
         + `\ntags: [reflectify, ${templateType.toLowerCase()}]`
         + `\n---`;
 
-    let content = `${frontmatter}\n\n${template}`;
+    let previousReflection = '';
     if (previousLink) {
-        content += `\n\n---\n前回のふりかえり → ${previousLink}`;
+        previousReflection = `前回のふりかえり → ${previousLink}`;
     }
+
+    let content = `${frontmatter}\n${previousReflection}\n${template}`;
 
     const file = await this.app.vault.create(filename, content);
     const leaf = this.app.workspace.getLeaf(true);
