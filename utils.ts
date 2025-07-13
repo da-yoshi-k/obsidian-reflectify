@@ -2,10 +2,13 @@ import moment from 'moment';
 import { TEMPLATES, TemplateType } from './templates';
 import { App, TFile } from 'obsidian';
 
-export function getReflectionFilename(granularity: 'daily' | 'weekly'): string {
+export function getReflectionFilename(granularity: 'daily' | 'weekly' | 'monthly'): string {
   if (granularity === 'weekly') {
     const weekNumber = moment().format('W');
     return `${moment().format('YYYY')}-W${weekNumber}-ふりかえり.md`;
+  }
+  if (granularity === 'monthly') {
+    return `${moment().format('YYYY-MM')}-ふりかえり.md`;
   }
   // daily
   const date = moment().format('YYYY-MM-DD');

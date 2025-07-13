@@ -6,7 +6,7 @@ export const REFLECT_VIEW_TYPE = 'reflect-view';
 
 export class ReflectView extends ItemView {
     plugin: ReflectifyPlugin;
-    private selectedGranularity: 'daily' | 'weekly' = 'daily';
+    private selectedGranularity: 'daily' | 'weekly' | 'monthly' = 'daily';
     private selectedTemplate: TemplateType = 'KPT';
 
     constructor(leaf: WorkspaceLeaf, plugin: ReflectifyPlugin) {
@@ -35,13 +35,14 @@ export class ReflectView extends ItemView {
 
         // Granularity Selector
         const granularityContainer = containerEl.createDiv({ cls: 'reflect-setting-container' });
-        granularityContainer.createEl('h3', { text: '粒度' });
+        granularityContainer.createEl('h3', { text: '期間' });
         const granularitySelect = granularityContainer.createEl('select');
         granularitySelect.createEl('option', { text: '日次', value: 'daily' });
         granularitySelect.createEl('option', { text: '週次', value: 'weekly' });
+        granularitySelect.createEl('option', { text: '月次', value: 'monthly' });
         granularitySelect.value = this.selectedGranularity;
         granularitySelect.addEventListener('change', (e) => {
-            this.selectedGranularity = (e.target as HTMLSelectElement).value as 'daily' | 'weekly';
+            this.selectedGranularity = (e.target as HTMLSelectElement).value as 'daily' | 'weekly' | 'monthly';
         });
 
         // Template Selector

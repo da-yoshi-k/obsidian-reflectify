@@ -46,7 +46,7 @@ export default class ReflectifyPlugin extends Plugin {
     );
   }
 
-  async createReflectionNote(granularity: 'daily' | 'weekly', templateType: TemplateType) {
+  async createReflectionNote(granularity: 'daily' | 'weekly' | 'monthly', templateType: TemplateType) {
     const filename = getReflectionFilename(granularity);
     const template = generateTemplate(templateType);
     const previousLink = getPreviousReflectionLink(this.app);
