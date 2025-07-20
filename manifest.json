@@ -1,0 +1,11 @@
+{
+	"id": "obsidian-reflectify",
+	"name": "Reflectify",
+	"version": "1.0.0",
+	"minAppVersion": "0.15.0",
+	"description": "日次・週次のふりかえりテンプレートを自動生成し、ユーザーが自然に記録・内省を続けられるようにするプラグインです。",
+	"author": "Your Name",
+	"authorUrl": "",
+	"isDesktopOnly": false,
+	"css": "styles.css"
+}

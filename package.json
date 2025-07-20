@@ -1,0 +1,30 @@
+{
+  "name": "obsidian-reflectify",
+  "version": "1.0.0",
+  "description": "This is a sample plugin for Obsidian.",
+  "main": "main.js",
+  "scripts": {
+    "dev": "esbuild main.ts --bundle --outfile=main.js --external:obsidian --format=cjs --target=es2018 --watch",
+    "build": "esbuild main.ts --bundle --outfile=main.js --external:obsidian --format=cjs --target=es2018 --minify"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/da-yoshi-k/obsidian-reflectify.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/da-yoshi-k/obsidian-reflectify/issues"
+  },
+  "homepage": "https://github.com/da-yoshi-k/obsidian-reflectify#readme",
+  "devDependencies": {
+    "@types/node": "^24.0.13",
+    "esbuild": "^0.25.6",
+    "obsidian": "^1.8.7",
+    "typescript": "^5.8.3"
+  },
+  "dependencies": {
+    "tslib": "^2.8.1"
+  }
+}

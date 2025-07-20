@@ -1,0 +1,24 @@
+.reflect-view-container {
+    padding: 0 15px;
+}
+
+.reflect-setting-container {
+    margin-bottom: 20px;
+}
+
+.reflect-setting-container h3 {
+    margin-bottom: 10px;
+}
+
+.reflect-setting-container select {
+    width: 100%;
+}
+
+.reflect-button-container {
+    text-align: center;
+    margin-top: 30px;
+}
+
+.reflect-button-container button {
+    width: 50%;
+}
