@@ -4,10 +4,14 @@ import { TEMPLATES, TemplateType } from './templates';
 
 export interface ReflectifySettings {
   templateType: TemplateType;
+  openAIApiKey: string;
+  dailyNoteFormat: string;
 }
 
 export const DEFAULT_SETTINGS: ReflectifySettings = {
-  templateType: 'KPT'
+  templateType: 'KPT',
+  openAIApiKey: '',
+  dailyNoteFormat: 'YYYY-MM-DD'
 };
 
 export class ReflectifySettingTab extends PluginSettingTab {
@@ -39,6 +43,32 @@ export class ReflectifySettingTab extends PluginSettingTab {
             await this.plugin.saveSettings();
           });
       });
+
+    new Setting(containerEl)
+      .setName('デイリーノートのファイル名形式')
+      .setDesc('moment.jsの形式で指定します。例: YYYY-MM-DD')
+      .addText(text =>
+        text
+          .setPlaceholder('YYYY-MM-DD')
+          .setValue(this.plugin.settings.dailyNoteFormat)
+          .onChange(async (value) => {
+            this.plugin.settings.dailyNoteFormat = value;
+            await this.plugin.saveSettings();
+          })
+      );
+
+    new Setting(containerEl)
+      .setName('OpenAI API Key')
+      .setDesc('APIキーは安全に保管され、外部に共有されることはありません。')
+      .addText(text =>
+        text
+          .setPlaceholder('sk-...')
+          .setValue(this.plugin.settings.openAIApiKey)
+          .onChange(async (value) => {
+            this.plugin.settings.openAIApiKey = value;
+            await this.plugin.saveSettings();
+          })
+      );
   }
 }
 

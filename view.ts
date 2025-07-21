@@ -1,6 +1,9 @@
 import { ItemView, WorkspaceLeaf, TFile } from 'obsidian';
 import ReflectifyPlugin from './main';
 import { TEMPLATES, TemplateType } from './templates';
+import { NoteCollector } from './NoteCollector';
+import { OpenAISummarizer } from './LLMSummarizer';
+import moment from 'moment';
 
 export const REFLECT_VIEW_TYPE = 'reflect-view';
 
@@ -8,6 +11,8 @@ export class ReflectView extends ItemView {
     plugin: ReflectifyPlugin;
     private selectedGranularity: 'daily' | 'weekly' | 'monthly' = 'daily';
     private selectedTemplate: TemplateType = 'KPT';
+    private startDate: string = moment().subtract(7, 'days').format('YYYY-MM-DD');
+    private endDate: string = moment().format('YYYY-MM-DD');
 
     constructor(leaf: WorkspaceLeaf, plugin: ReflectifyPlugin) {
         super(leaf);
@@ -25,6 +30,9 @@ export class ReflectView extends ItemView {
     getIcon() {
         return 'book-copy';
     }
+
+    private summaryResultContainer: HTMLDivElement;
+    private referencedFilesContainer: HTMLDivElement;
 
     async onOpen() {
         const { containerEl } = this;
@@ -64,6 +72,57 @@ export class ReflectView extends ItemView {
         createButton.addEventListener('click', async () => {
             await this.plugin.createReflectionNote(this.selectedGranularity, this.selectedTemplate);
         });
+
+        // --- Summary Section ---
+        containerEl.createEl('h2', { text: 'デイリーノートを要約' });
+
+        // Date Range Picker
+        const dateContainer = containerEl.createDiv({ cls: 'reflect-setting-container' });
+        dateContainer.createEl('h3', { text: '期間を選択' });
+        const startDateInput = dateContainer.createEl('input', { type: 'date' });
+        startDateInput.value = this.startDate;
+        startDateInput.addEventListener('change', (e) => {
+            this.startDate = (e.target as HTMLInputElement).value;
+        });
+
+        const endDateInput = dateContainer.createEl('input', { type: 'date' });
+        endDateInput.value = this.endDate;
+        endDateInput.addEventListener('change', (e) => {
+            this.endDate = (e.target as HTMLInputElement).value;
+        });
+
+        // Summarize Button
+        const summarizeButtonContainer = containerEl.createDiv({ cls: 'reflect-button-container' });
+        const summarizeButton = summarizeButtonContainer.createEl('button', { text: '要約を生成', cls: 'mod-cta' });
+        summarizeButton.addEventListener('click', async () => {
+            await this.handleSummarize();
+        });
+
+        // Referenced Files Container
+        this.referencedFilesContainer = containerEl.createDiv({ cls: 'referenced-files-container' });
+
+        // Summary Result Container
+        this.summaryResultContainer = containerEl.createDiv({ cls: 'summary-result-container' });
+    }
+
+    async handleSummarize() {
+        const collector = new NoteCollector(this.plugin.app);
+        const summarizer = new OpenAISummarizer();
+
+        try {
+            const { content: notesText } = await collector.collectDailyNotes(this.startDate, this.endDate, this.plugin.settings.dailyNoteFormat);
+            if (!notesText) {
+                this.plugin.app.vault.create('summary.md', '対象期間のデイリーノートが見つかりませんでした。');
+                return;
+            }
+
+            const summary = await summarizer.summarize(notesText, this.plugin.settings.openAIApiKey);
+            const summaryFilename = `Summary-${this.startDate}-to-${this.endDate}.md`;
+            await this.plugin.app.vault.create(summaryFilename, summary);
+        } catch (error) {
+            console.error('Failed to summarize notes:', error);
+            this.plugin.app.vault.create('summary-error.md', `要約の生成中にエラーが発生しました。\n\n${error.message}`);
+        }
     }
 }
 
