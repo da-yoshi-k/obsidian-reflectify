@@ -13,6 +13,7 @@ export class ReflectView extends ItemView {
     private selectedTemplate: TemplateType = 'KPT';
     private startDate: string = moment().subtract(7, 'days').format('YYYY-MM-DD');
     private endDate: string = moment().format('YYYY-MM-DD');
+    private referencedFilesContainer: HTMLDivElement;
 
     constructor(leaf: WorkspaceLeaf, plugin: ReflectifyPlugin) {
         super(leaf);
@@ -30,9 +31,6 @@ export class ReflectView extends ItemView {
     getIcon() {
         return 'book-copy';
     }
-
-    private summaryResultContainer: HTMLDivElement;
-    private referencedFilesContainer: HTMLDivElement;
 
     async onOpen() {
         const { containerEl } = this;
@@ -100,29 +98,49 @@ export class ReflectView extends ItemView {
 
         // Referenced Files Container
         this.referencedFilesContainer = containerEl.createDiv({ cls: 'referenced-files-container' });
-
-        // Summary Result Container
-        this.summaryResultContainer = containerEl.createDiv({ cls: 'summary-result-container' });
     }
 
     async handleSummarize() {
+        this.referencedFilesContainer.empty();
+
         const collector = new NoteCollector(this.plugin.app);
         const summarizer = new OpenAISummarizer();
 
         try {
-            const { content: notesText } = await collector.collectDailyNotes(this.startDate, this.endDate, this.plugin.settings.dailyNoteFormat);
-            if (!notesText) {
-                this.plugin.app.vault.create('summary.md', '対象期間のデイリーノートが見つかりませんでした。');
+            this.referencedFilesContainer.createEl('p', { text: 'デイリーノートを収集中...'});
+            const { files, content: notesText } = await collector.collectDailyNotes(this.startDate, this.endDate, this.plugin.settings.dailyNoteFormat);
+
+            this.referencedFilesContainer.empty();
+
+            if (files.length === 0) {
+                this.referencedFilesContainer.createEl('p', { text: '対象期間のデイリーノートが見つかりませんでした。' });
                 return;
             }
+
+            // Display referenced files
+            this.referencedFilesContainer.createEl('h4', { text: '参照元ノート' });
+            const list = this.referencedFilesContainer.createEl('ul');
+            files.forEach(file => {
+                list.createEl('li', { text: file.basename });
+            });
+
+            this.referencedFilesContainer.createEl('p', { text: '要約を生成中...'});
 
             const summary = await summarizer.summarize(notesText, this.plugin.settings.openAIApiKey);
             const summaryFilename = `Summary-${this.startDate}-to-${this.endDate}.md`;
             await this.plugin.app.vault.create(summaryFilename, summary);
+
+            // Clear "generating..." message and show success
+            const generatingMessage = this.referencedFilesContainer.querySelector('p');
+            if(generatingMessage) generatingMessage.remove();
+
+            this.referencedFilesContainer.createEl('h4', { text: '要約が完了しました' });
+            this.referencedFilesContainer.createEl('p', { text: `${summaryFilename} に保存されました。` });
+
         } catch (error) {
             console.error('Failed to summarize notes:', error);
-            this.plugin.app.vault.create('summary-error.md', `要約の生成中にエラーが発生しました。\n\n${error.message}`);
+            this.referencedFilesContainer.empty();
+            this.referencedFilesContainer.createEl('p', { text: `要約の生成中にエラーが発生しました。\n\n${error.message}` });
         }
     }
 }
-

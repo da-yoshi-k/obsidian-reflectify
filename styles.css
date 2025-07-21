@@ -1,5 +1,7 @@
 .reflect-view-container {
     padding: 0 15px;
+    height: 100%;
+    overflow-y: auto;
 }
 
 .reflect-setting-container {
