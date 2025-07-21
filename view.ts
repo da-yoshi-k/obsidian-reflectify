@@ -37,12 +37,15 @@ export class ReflectView extends ItemView {
         containerEl.empty();
         containerEl.addClass('reflect-view-container');
 
-        containerEl.createEl('h2', { text: 'ふりかえりノートを作成' });
+        // --- Reflect Note Section ---
+        const reflectSection = containerEl.createDiv({ cls: 'reflect-section flex-row' });
+        reflectSection.createEl('strong', { text: 'ふりかえりノート' });
 
-        // Granularity Selector
-        const granularityContainer = containerEl.createDiv({ cls: 'reflect-setting-container' });
-        granularityContainer.createEl('h3', { text: '期間' });
-        const granularitySelect = granularityContainer.createEl('select');
+        // Granularity + Template + Button 横並び
+        const reflectForm = reflectSection.createDiv({ cls: 'reflect-form flex-row' });
+
+        // Granularity
+        const granularitySelect = reflectForm.createEl('select', { cls: 'reflect-select' });
         granularitySelect.createEl('option', { text: '日次', value: 'daily' });
         granularitySelect.createEl('option', { text: '週次', value: 'weekly' });
         granularitySelect.createEl('option', { text: '月次', value: 'monthly' });
@@ -51,10 +54,8 @@ export class ReflectView extends ItemView {
             this.selectedGranularity = (e.target as HTMLSelectElement).value as 'daily' | 'weekly' | 'monthly';
         });
 
-        // Template Selector
-        const templateContainer = containerEl.createDiv({ cls: 'reflect-setting-container' });
-        templateContainer.createEl('h3', { text: 'テンプレート' });
-        const templateSelect = templateContainer.createEl('select');
+        // Template
+        const templateSelect = reflectForm.createEl('select', { cls: 'reflect-select' });
         const templateOptions = Object.keys(TEMPLATES) as TemplateType[];
         templateOptions.forEach(option => {
             templateSelect.createEl('option', { text: option, value: option });
@@ -65,33 +66,34 @@ export class ReflectView extends ItemView {
         });
 
         // Create Button
-        const buttonContainer = containerEl.createDiv({ cls: 'reflect-button-container' });
-        const createButton = buttonContainer.createEl('button', { text: '作成', cls: 'mod-cta' });
+        const createButton = reflectForm.createEl('button', { text: '作成', cls: 'mod-cta reflect-btn' });
         createButton.addEventListener('click', async () => {
             await this.plugin.createReflectionNote(this.selectedGranularity, this.selectedTemplate);
         });
 
         // --- Summary Section ---
-        containerEl.createEl('h2', { text: 'デイリーノートを要約' });
+        const summarySection = containerEl.createDiv({ cls: 'reflect-section flex-row' });
+        summarySection.createEl('strong', { text: 'デイリーノート要約' });
 
-        // Date Range Picker
-        const dateContainer = containerEl.createDiv({ cls: 'reflect-setting-container' });
-        dateContainer.createEl('h3', { text: '期間を選択' });
-        const startDateInput = dateContainer.createEl('input', { type: 'date' });
+        // 日付範囲 + ボタン 横並び
+        const summaryForm = summarySection.createDiv({ cls: 'reflect-form flex-row' });
+
+        // Start Date
+        const startDateInput = summaryForm.createEl('input', { type: 'date', cls: 'reflect-date' });
         startDateInput.value = this.startDate;
         startDateInput.addEventListener('change', (e) => {
             this.startDate = (e.target as HTMLInputElement).value;
         });
 
-        const endDateInput = dateContainer.createEl('input', { type: 'date' });
+        // End Date
+        const endDateInput = summaryForm.createEl('input', { type: 'date', cls: 'reflect-date' });
         endDateInput.value = this.endDate;
         endDateInput.addEventListener('change', (e) => {
             this.endDate = (e.target as HTMLInputElement).value;
         });
 
         // Summarize Button
-        const summarizeButtonContainer = containerEl.createDiv({ cls: 'reflect-button-container' });
-        const summarizeButton = summarizeButtonContainer.createEl('button', { text: '要約を生成', cls: 'mod-cta' });
+        const summarizeButton = summaryForm.createEl('button', { text: '要約を生成', cls: 'mod-cta reflect-btn' });
         summarizeButton.addEventListener('click', async () => {
             await this.handleSummarize();
         });
